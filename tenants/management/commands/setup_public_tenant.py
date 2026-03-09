@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand
+﻿from django.core.management.base import BaseCommand
 
 from tenants.models import Client, Domain
 
@@ -14,7 +14,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--name",
-            default="MediEcua Public",
+            default="Onne Public",
             help="Nombre del tenant publico.",
         )
 
@@ -78,3 +78,4 @@ class Command(BaseCommand):
                 f"Tenant publico listo (created={created}) con dominios: {', '.join(domains)}"
             )
         )
+

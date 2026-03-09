@@ -18,16 +18,16 @@ from django.core.exceptions import ImproperlyConfigured
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Cargar variables de entorno desde .env
-load_dotenv(BASE_DIR / '.env')
+load_dotenv(BASE_DIR / '.env', override=True)
 
 # ---- Seguridad ----
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-key-CHANGE-IN-PRODUCTION-d8f9a7b6c5e4f3a2b1')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Validar SECRET_KEY en producciÃ³n
+# Validar SECRET_KEY en producciÃƒÂ³n
 if not DEBUG and SECRET_KEY == 'dev-key-CHANGE-IN-PRODUCTION-d8f9a7b6c5e4f3a2b1':
     raise ImproperlyConfigured(
-        'SECRET_KEY debe estar configurada en producciÃ³n. '
+        'SECRET_KEY debe estar configurada en producciÃƒÂ³n. '
         'Genera una con: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"'
     )
 
@@ -76,7 +76,7 @@ TENANT_MODEL = 'tenants.Client'
 TENANT_DOMAIN_MODEL = 'tenants.Domain'
 DATABASE_ROUTERS = ('django_tenants.routers.TenantSyncRouter',)
 
-# Dominio base para tenants (usa .env para producciÃ³n)
+# Dominio base para tenants (usa .env para producciÃƒÂ³n)
 TENANT_BASE_DOMAIN = os.getenv('TENANT_BASE_DOMAIN', 'localhost')
 
 TEMPLATES = [
@@ -107,7 +107,7 @@ if _db_engine != 'postgresql':
 DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': os.getenv('DB_NAME', 'mediecua'),
+        'NAME': os.getenv('DB_NAME', 'onne'),
         'USER': os.getenv('DB_USER', 'postgres'),
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', 'localhost'),
@@ -122,9 +122,9 @@ AUTH_PASSWORD_VALIDATORS = [
    
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-     "OPTIONS": {"min_length": 8}},  # sÃºbelo o bÃ¡jalo
+     "OPTIONS": {"min_length": 8}},  # sÃƒÂºbelo o bÃƒÂ¡jalo
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},  # quÃ­talo si no quieres bloquear numÃ©ricas
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},  # quÃƒÂ­talo si no quieres bloquear numÃƒÂ©ricas
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -159,15 +159,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR,'static'),]
 
-# Redirecciones despuÃ©s de login/logout
+# Redirecciones despuÃƒÂ©s de login/logout
 
 # config/settings.py
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
-# ConfiguraciÃ³n de sesiÃ³n
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 dÃ­as
+# ConfiguraciÃƒÂ³n de sesiÃƒÂ³n
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 dÃƒÂ­as
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
@@ -182,14 +182,14 @@ CSRF_TRUSTED_ORIGINS = os.getenv(
     'https://localhost',
 ).split(',')
 
-# Seguridad adicional en producciÃ³n
+# Seguridad adicional en producciÃƒÂ³n
 if not DEBUG:
     ENABLE_SSL = os.getenv('ENABLE_SSL', 'False') == 'True'
     SESSION_COOKIE_SECURE = ENABLE_SSL
     CSRF_COOKIE_SECURE = ENABLE_SSL
     SECURE_SSL_REDIRECT = ENABLE_SSL
     if ENABLE_SSL:
-        SECURE_HSTS_SECONDS = 31536000  # 1 aÃ±o
+        SECURE_HSTS_SECONDS = 31536000  # 1 aÃƒÂ±o
         SECURE_HSTS_INCLUDE_SUBDOMAINS = True
         SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -213,7 +213,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'mediecua.log',
+            'filename': BASE_DIR / 'logs' / 'onne.log',
             'formatter': 'verbose',
         },
     },
@@ -234,4 +234,5 @@ LOGGING = {
         },
     },
 }
+
 

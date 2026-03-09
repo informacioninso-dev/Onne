@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Inicio · MediEcua{% endblock %}
+{% block title %}Inicio ? Onne{% endblock %}
 
 {% block content %}
   <div class="rounded-2xl border bg-white p-6">
-    <h1 class="text-2xl font-bold">MediEcua 360</h1>
+    <h1 class="text-2xl font-bold">Onne 360</h1>
     <p class="mt-2 text-sm text-gray-600">
-      Lienzo limpio preparado para construir el sistema gestor clínico.
+      Lienzo limpio preparado para construir el sistema gestor cl?nico.
     </p>
     {% if tenant_schema and tenant_schema != "public" %}
       <div class="mt-6 rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
-        <p><strong>Clínica:</strong> {{ tenant_name|default:"-" }}</p>
+        <p><strong>Cl?nica:</strong> {{ tenant_name|default:"-" }}</p>
         <p><strong>Schema:</strong> {{ tenant_schema }}</p>
       </div>
     {% endif %}

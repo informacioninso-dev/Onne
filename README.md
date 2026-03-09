@@ -1,15 +1,15 @@
-# MediEcua 360 (Base Limpia)
+﻿# Onne 360 (Base Limpia)
 
-Repositorio reducido para iniciar el sistema gestor de clínica sobre Django + multitenancy por schema.
+Repositorio reducido para iniciar el sistema gestor de clÃ­nica sobre Django + multitenancy por schema.
 
 ## Estado actual
 
 - Apps activas:
   - `tenants` (schema/domain/memberships)
-  - `core` (base mínima y dashboard)
+  - `core` (base mÃ­nima y dashboard)
   - `patients` (registro base de pacientes)
   - `appointments` (agenda de citas)
-- Apps ERP heredadas eliminadas para evitar arrastrar deuda técnica.
+- Apps ERP heredadas eliminadas para evitar arrastrar deuda tÃ©cnica.
 
 ## Arranque local
 
@@ -30,11 +30,12 @@ poetry run python manage.py bootstrap_clinic <schema> "<nombre>" <subdominio.dom
 Ejemplo:
 
 ```bash
-poetry run python manage.py bootstrap_clinic clinica_a "Clinica A" clinica-a.localhost --admin-user admin --admin-email admin@mediecua.local --admin-password "MediEcua2026!"
+poetry run python manage.py bootstrap_clinic clinica_a "Clinica A" clinica-a.localhost --admin-user admin --admin-email admin@onne.local --admin-password "Onne2026!"
 ```
 
 ## Acceso y subdominios
 
-- El superadmin accede al portal publico con usuario y contraseÃ±a para gestionar tenants.
-- Los usuarios normales solo pueden entrar a tenants donde tengan membresÃ­a activa y deben autenticarse con contraseÃ±a.
-- Para compartir sesiÃ³n entre subdominios (`empresa1.dominio.com`, `empresa2.dominio.com`), define `SESSION_COOKIE_DOMAIN` y `CSRF_COOKIE_DOMAIN` como `.dominio.com`.
+- El superadmin accede al portal publico con usuario y contraseÃƒÂ±a para gestionar tenants.
+- Los usuarios normales solo pueden entrar a tenants donde tengan membresÃƒÂ­a activa y deben autenticarse con contraseÃƒÂ±a.
+- Para compartir sesiÃƒÂ³n entre subdominios (`empresa1.dominio.com`, `empresa2.dominio.com`), define `SESSION_COOKIE_DOMAIN` y `CSRF_COOKIE_DOMAIN` como `.dominio.com`.
+

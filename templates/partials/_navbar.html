@@ -1,15 +1,15 @@
 {% load static %}
-<header class="bg-white/90 backdrop-blur border-b">
+<header class="app-navbar bg-white/90 backdrop-blur border-b">
   <div class="container mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-    <a href="{% url 'dashboard' %}" class="flex items-center gap-3">
+    <a href="{% url 'dashboard' %}" class="app-brand flex items-center gap-3">
       <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-8 w-8" />
-      <span class="font-semibold">MediEcua 360</span>
+      <span class="font-semibold">Onne 360</span>
     </a>
 
     <nav class="flex items-center gap-4">
       {% if request.user.is_authenticated %}
         {% if request.tenant.schema_name == 'public' %}
-          <a href="{% url 'dashboard' %}" class="text-sm text-gray-700 hover:underline">Mis clínicas</a>
+          <a href="{% url 'dashboard' %}" class="text-sm text-gray-700 hover:underline">Mis cl?nicas</a>
           {% if request.user.is_superuser %}
             <a href="{% url 'tenants:list' %}" class="text-sm text-gray-700 hover:underline">Tenants</a>
           {% endif %}
@@ -23,7 +23,7 @@
           <button type="submit" class="text-sm text-red-600 hover:underline">Salir</button>
         </form>
       {% else %}
-        <a href="{% url 'login' %}" class="text-sm text-blue-600 hover:underline">Iniciar sesión</a>
+        <a href="{% url 'login' %}" class="text-sm text-blue-600 hover:underline">Iniciar sesi?n</a>
       {% endif %}
     </nav>
   </div>
