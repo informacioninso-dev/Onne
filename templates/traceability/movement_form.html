@@ -1,0 +1,139 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div class="mx-auto max-w-5xl space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold">{{ page_title }}</h1>
+      <p class="mt-1 text-sm text-gray-600">Registra ingresos, consumos y ajustes de stock.</p>
+    </div>
+
+    {% if is_consumption %}
+      <div class="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-blue-700">Sugerencia FEFO</h2>
+        <p class="mt-1 text-sm text-blue-900">Selecciona primero el insumo. Al cambiar insumo o tipo, el formulario recarga lotes recomendados por FEFO sin perder el contexto.</p>
+        <div class="mt-3 overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="text-left text-blue-700">
+              <tr>
+                <th class="px-3 py-2">Insumo</th>
+                <th class="px-3 py-2">Lote</th>
+                <th class="px-3 py-2">Expira</th>
+                <th class="px-3 py-2">Stock</th>
+                <th class="px-3 py-2">Costo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for lot in recommended_lots %}
+                <tr class="border-t border-blue-100">
+                  <td class="px-3 py-2">{{ lot.item.name }}</td>
+                  <td class="px-3 py-2">{{ lot.lot_number }}</td>
+                  <td class="px-3 py-2">{{ lot.expires_at|default:"Sin fecha" }}</td>
+                  <td class="px-3 py-2">{{ lot.current_quantity }}</td>
+                  <td class="px-3 py-2">$ {{ lot.unit_cost|floatformat:2 }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="px-3 py-3 text-blue-800">No hay lotes disponibles para recomendar con el insumo seleccionado.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+
+    <form method="post" class="rounded-2xl border bg-white p-6" id="movement-form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ form.non_field_errors }}</div>
+      {% endif %}
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm font-medium">Insumo</label>
+          {{ form.supply_item }}
+          {{ form.supply_item.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Lote</label>
+          {{ form.lot }}
+          {{ form.lot.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Tipo</label>
+          {{ form.movement_type }}
+          {{ form.movement_type.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Cantidad</label>
+          {{ form.quantity }}
+          {{ form.quantity.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Fecha y hora</label>
+          {{ form.occurred_at }}
+          {{ form.occurred_at.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Atencion clinica</label>
+          {{ form.clinical_encounter }}
+          {{ form.clinical_encounter.errors }}
+        </div>
+        <div class="md:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Motivo</label>
+          {{ form.reason }}
+          {{ form.reason.errors }}
+        </div>
+        <div class="md:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Notas</label>
+          {{ form.notes }}
+          {{ form.notes.errors }}
+        </div>
+      </div>
+      <div class="mt-6 flex gap-2">
+        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Guardar</button>
+        <a href="{% url 'traceability:index' %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Cancelar</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    (function () {
+      const supplyItem = document.getElementById('id_supply_item');
+      const movementType = document.getElementById('id_movement_type');
+      if (!supplyItem || !movementType) {
+        return;
+      }
+
+      const reloadWithFilters = () => {
+        const params = new URLSearchParams(window.location.search);
+        const selectedType = movementType.value || '';
+        const selectedItem = supplyItem.value || '';
+        const encounterField = document.getElementById('id_clinical_encounter');
+
+        if (selectedType) {
+          params.set('movement_type', selectedType);
+        } else {
+          params.delete('movement_type');
+        }
+
+        if (selectedItem) {
+          params.set('supply_item', selectedItem);
+        } else {
+          params.delete('supply_item');
+        }
+
+        if (encounterField && encounterField.value) {
+          params.set('encounter', encounterField.value);
+        }
+
+        window.location.search = params.toString();
+      };
+
+      supplyItem.addEventListener('change', reloadWithFilters);
+      movementType.addEventListener('change', reloadWithFilters);
+    })();
+  </script>
+{% endblock %}
+

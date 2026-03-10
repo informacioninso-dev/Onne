@@ -1,4 +1,4 @@
-from django.conf import settings
+﻿from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.shortcuts import redirect
@@ -31,13 +31,14 @@ class TenantAccessMiddleware:
         if user.is_superuser:
             return None
 
-        allowed = TenantMembership.objects.filter(
+        membership = TenantMembership.objects.filter(
             tenant=tenant,
             user=user,
             is_active=True,
-        ).exists()
+        ).first()
+        request.tenant_membership = membership
 
-        if not allowed:
+        if not membership:
             logout(request)
             messages.error(request, "No tienes acceso a esta clinica.")
             return redirect(settings.LOGIN_URL)

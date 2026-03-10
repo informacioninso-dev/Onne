@@ -1,4 +1,4 @@
-import re
+﻿import re
 
 from django import forms
 from django.conf import settings
@@ -21,7 +21,7 @@ class TenantCreateForm(forms.Form):
         label="Subdominio",
         max_length=63,
         widget=forms.TextInput(attrs={**_INPUT, "placeholder": "acme"}),
-        help_text=f"Se convertirá en subdominio.{settings.TENANT_BASE_DOMAIN}"
+        help_text=f"Se convertira en subdominio.{settings.TENANT_BASE_DOMAIN}"
     )
     plan = forms.ChoiceField(label="Plan", choices=Client.PLAN_CHOICES, widget=forms.Select(attrs=_INPUT))
 
@@ -43,18 +43,14 @@ class TenantCreateForm(forms.Form):
 
     def clean_subdomain(self):
         value = (self.cleaned_data.get("subdomain") or "").strip().lower()
-        # Limpiar cualquier protocolo o path
         value = value.replace("https://", "").replace("http://", "").strip("/")
-        # Quitar el dominio base si lo incluyeron
         base_domain = settings.TENANT_BASE_DOMAIN
         if value.endswith(f".{base_domain}"):
             value = value[: -(len(base_domain) + 1)]
 
-        # Validar formato de subdomain (solo alfanumérico y guiones)
         if not re.match(r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$", value):
-            raise ValidationError("Subdominio inválido. Solo letras, números y guiones.")
+            raise ValidationError("Subdominio invalido. Solo letras, numeros y guiones.")
 
-        # Construir dominio completo
         full_domain = f"{value}.{base_domain}"
         return full_domain
 
@@ -89,11 +85,21 @@ class AddMemberForm(forms.Form):
         max_length=150,
         widget=forms.TextInput(attrs={**_INPUT, "placeholder": "username"}),
     )
-    is_admin = forms.BooleanField(
-        label="Es administrador",
-        required=False,
-        widget=forms.CheckboxInput(attrs={"class": "h-4 w-4 rounded border-gray-300"}),
+    role = forms.ChoiceField(
+        label="Rol",
+        choices=TenantMembership.ROLE_CHOICES,
+        initial=TenantMembership.ROLE_STAFF,
+        widget=forms.Select(attrs=_INPUT),
     )
+
+
+class MembershipRoleForm(forms.ModelForm):
+    class Meta:
+        model = TenantMembership
+        fields = ('role',)
+        widgets = {
+            'role': forms.Select(attrs=_INPUT),
+        }
 
 
 class TenantAuthenticationForm(AuthenticationForm):
@@ -108,7 +114,7 @@ class TenantAuthenticationForm(AuthenticationForm):
         ),
     )
     password = forms.CharField(
-        label="Contraseña",
+        label="Contrasena",
         strip=False,
         widget=forms.PasswordInput(
             attrs={

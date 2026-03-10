@@ -1,11 +1,13 @@
-from types import SimpleNamespace
+﻿from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from django.core.management.base import CommandError
-from django.test import SimpleTestCase
+from django.test import RequestFactory, SimpleTestCase
 
 from tenants.auth_backends import TenantAwareBackend
 from tenants.management.commands.bootstrap_clinic import Command as BootstrapClinicCommand
+from tenants.models import TenantMembership
+from tenants.permissions import has_minimum_role
 
 
 class TenantAwareBackendTests(SimpleTestCase):
@@ -139,3 +141,24 @@ class BootstrapClinicCommandTests(SimpleTestCase):
 
         call_command.assert_not_called()
         client.delete.assert_called_once_with(force_drop=True)
+
+
+class TenantPermissionTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_superuser_bypasses_role_checks(self):
+        request = self.factory.get('/patients/')
+        request.user = SimpleNamespace(is_authenticated=True, is_superuser=True)
+        request.tenant = SimpleNamespace(schema_name='demo')
+
+        self.assertTrue(has_minimum_role(request, TenantMembership.ROLE_ADMIN))
+
+    def test_membership_role_must_meet_minimum(self):
+        request = self.factory.get('/clinical/')
+        request.user = SimpleNamespace(is_authenticated=True, is_superuser=False)
+        request.tenant = SimpleNamespace(schema_name='demo')
+        request.tenant_membership = SimpleNamespace(role=TenantMembership.ROLE_STAFF)
+
+        self.assertFalse(has_minimum_role(request, TenantMembership.ROLE_CLINICAL))
+        self.assertTrue(has_minimum_role(request, TenantMembership.ROLE_STAFF))

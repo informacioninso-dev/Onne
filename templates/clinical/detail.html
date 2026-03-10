@@ -1,0 +1,164 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Atencion de {{ encounter.patient.last_name }}{% endblock %}
+
+{% block content %}
+  <div class="space-y-6">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">Atencion de {{ encounter.patient.last_name }}, {{ encounter.patient.first_name }}</h1>
+        <p class="mt-1 text-sm text-gray-600">{{ encounter.started_at|date:"d/m/Y H:i" }}</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="{% url 'clinical:create_order' encounter.pk %}" class="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50">Nueva orden</a>
+        <a href="{% url 'traceability:create_movement' %}?encounter={{ encounter.pk }}&movement_type=CONSUMPTION" class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Registrar consumo</a>
+        <a href="{% url 'clinical:edit' encounter.pk %}" class="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50">Editar</a>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border bg-white p-6">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Resumen</h2>
+        <dl class="space-y-3 text-sm">
+          <div><dt class="text-gray-500">Paciente</dt><dd class="font-medium"><a href="{% url 'patients:detail' encounter.patient.pk %}" class="text-blue-700 hover:underline">{{ encounter.patient.last_name }}, {{ encounter.patient.first_name }}</a></dd></div>
+          <div><dt class="text-gray-500">Historia clinica</dt><dd class="font-mono">{{ encounter.patient.mrn }}</dd></div>
+          <div><dt class="text-gray-500">Estado</dt><dd>{{ encounter.get_status_display }}</dd></div>
+          <div><dt class="text-gray-500">Motivo clinico</dt><dd>{{ encounter.chief_complaint }}</dd></div>
+          <div><dt class="text-gray-500">Diagnostico</dt><dd>{{ encounter.diagnosis|default:"Sin diagnostico registrado." }}</dd></div>
+          <div><dt class="text-gray-500">Ordenes clinicas</dt><dd>{{ orders|length }}</dd></div>
+          <div><dt class="text-gray-500">Consumos registrados</dt><dd>{{ consumption_count }}</dd></div>
+          <div><dt class="text-gray-500">Costo insumos</dt><dd>$ {{ total_supply_cost|floatformat:2 }}</dd></div>
+          <div>
+            <dt class="text-gray-500">Cita relacionada</dt>
+            <dd>
+              {% if encounter.appointment %}
+                <a href="{% url 'appointments:detail' encounter.appointment.pk %}" class="text-blue-700 hover:underline">Ver cita</a>
+              {% else %}
+                -
+              {% endif %}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="rounded-2xl border bg-white p-6">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">SOAP</h2>
+        <div class="space-y-4 text-sm text-gray-700">
+          <div><h3 class="font-medium text-gray-900">Subjetivo</h3><p class="mt-1 whitespace-pre-line">{{ encounter.subjective|default:"Sin hallazgos subjetivos registrados." }}</p></div>
+          <div><h3 class="font-medium text-gray-900">Objetivo</h3><p class="mt-1 whitespace-pre-line">{{ encounter.objective|default:"Sin hallazgos objetivos registrados." }}</p></div>
+          <div><h3 class="font-medium text-gray-900">Evaluacion</h3><p class="mt-1 whitespace-pre-line">{{ encounter.assessment|default:"Sin evaluacion registrada." }}</p></div>
+          <div><h3 class="font-medium text-gray-900">Plan</h3><p class="mt-1 whitespace-pre-line">{{ encounter.plan|default:"Sin plan registrado." }}</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border bg-white p-6">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-500">Ordenes clinicas</h2>
+        <a href="{% url 'clinical:create_order' encounter.pk %}" class="text-sm text-blue-700 hover:underline">Nueva orden</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50 text-left text-gray-600">
+            <tr>
+              <th class="px-4 py-2">Fecha</th>
+              <th class="px-4 py-2">Tipo</th>
+              <th class="px-4 py-2">Titulo</th>
+              <th class="px-4 py-2">Prioridad</th>
+              <th class="px-4 py-2">Estado</th>
+              <th class="px-4 py-2">Resultado</th>
+              <th class="px-4 py-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders %}
+              <tr class="border-t align-top">
+                <td class="px-4 py-2">{{ order.requested_at|date:"d/m/Y H:i" }}</td>
+                <td class="px-4 py-2">{{ order.get_order_type_display }}</td>
+                <td class="px-4 py-2">
+                  <div class="font-medium text-gray-900">{{ order.title }}</div>
+                  {% if order.instructions %}
+                    <div class="mt-1 whitespace-pre-line text-xs text-gray-500">{{ order.instructions }}</div>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-2">{{ order.get_priority_display }}</td>
+                <td class="px-4 py-2">{{ order.get_status_display }}</td>
+                <td class="px-4 py-2 text-gray-600">{{ order.result_notes|default:'-' }}</td>
+                <td class="px-4 py-2">
+                  <div class="flex flex-wrap gap-2">
+                    <a href="{% url 'clinical:edit_order' order.pk %}" class="rounded border px-2 py-1 text-xs text-gray-600 hover:bg-gray-100">Editar</a>
+                    <form method="post" action="{% url 'clinical:update_order_status' order.pk %}" class="flex flex-wrap gap-1">
+                      {% csrf_token %}
+                      {% for value, label in order_status_choices %}
+                        <button type="submit" name="status" value="{{ value }}" class="rounded border px-2 py-1 text-xs hover:bg-gray-50 {% if order.status == value %}border-blue-600 text-blue-700{% endif %}">{{ label }}</button>
+                      {% endfor %}
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="px-4 py-4 text-center text-gray-500">No hay ordenes clinicas registradas para esta atencion.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border bg-white p-6">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-500">Consumos y movimientos</h2>
+        <a href="{% url 'traceability:create_movement' %}?encounter={{ encounter.pk }}&movement_type=CONSUMPTION" class="text-sm text-blue-700 hover:underline">Registrar consumo</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50 text-left text-gray-600">
+            <tr>
+              <th class="px-4 py-2">Fecha</th>
+              <th class="px-4 py-2">Insumo</th>
+              <th class="px-4 py-2">Lote</th>
+              <th class="px-4 py-2">Tipo</th>
+              <th class="px-4 py-2">Cantidad</th>
+              <th class="px-4 py-2">Costo</th>
+              <th class="px-4 py-2">Motivo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for movement in stock_movements %}
+              <tr class="border-t">
+                <td class="px-4 py-2">{{ movement.occurred_at|date:"d/m/Y H:i" }}</td>
+                <td class="px-4 py-2">{{ movement.lot.item.name }}</td>
+                <td class="px-4 py-2"><a href="{% url 'traceability:lot_detail' movement.lot.pk %}" class="text-blue-700 hover:underline">{{ movement.lot.lot_number }}</a></td>
+                <td class="px-4 py-2">{{ movement.get_movement_type_display }}</td>
+                <td class="px-4 py-2">{{ movement.quantity }}</td>
+                <td class="px-4 py-2">$ {{ movement.total_cost|floatformat:2 }}</td>
+                <td class="px-4 py-2">{{ movement.reason }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="px-4 py-4 text-center text-gray-500">No hay consumos ni movimientos vinculados a esta atencion.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border bg-white p-6">
+      <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Cambiar estado</h2>
+      <form method="post" action="{% url 'clinical:update_status' encounter.pk %}" class="flex flex-wrap items-center gap-2">
+        {% csrf_token %}
+        {% for value, label in status_choices %}
+          <button type="submit" name="status" value="{{ value }}" class="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50 {% if encounter.status == value %}border-blue-600 text-blue-700{% endif %}">
+            {{ label }}
+          </button>
+        {% endfor %}
+      </form>
+    </div>
+
+    <div>
+      <a href="{% url 'clinical:index' %}" class="text-sm text-gray-500 hover:underline">&larr; Volver a atencion</a>
+    </div>
+  </div>
+{% endblock %}

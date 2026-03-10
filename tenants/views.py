@@ -1,4 +1,4 @@
-from django.conf import settings
+﻿from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.views.generic import ListView, UpdateView, View
 from django_tenants.utils import schema_context
 
-from .forms import AddMemberForm, TenantAuthenticationForm, TenantCreateForm, TenantEditForm
+from .forms import AddMemberForm, MembershipRoleForm, TenantAuthenticationForm, TenantCreateForm, TenantEditForm
 from .models import Client, Domain, TenantMembership
 
 
@@ -146,7 +146,7 @@ class TenantCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, View):
             TenantMembership.objects.get_or_create(
                 tenant=client,
                 user=user,
-                defaults={"is_admin": True, "is_active": True},
+                defaults={"role": TenantMembership.ROLE_OWNER, "is_admin": True, "is_active": True},
             )
 
         messages.success(request, f"Clinica '{client.name}' creada correctamente.")
@@ -169,15 +169,33 @@ class TenantEditView(LoginRequiredMixin, SuperAdminRequiredMixin, UpdateView):
 
 
 class TenantDetailView(LoginRequiredMixin, SuperAdminRequiredMixin, View):
+    def _get_tenant(self, pk):
+        return Client.objects.filter(pk=pk).prefetch_related("domains", "memberships__user").first()
+
+    def _membership_rows(self, tenant):
+        rows = []
+        for membership in tenant.memberships.all():
+            rows.append(
+                {
+                    "membership": membership,
+                    "role_form": MembershipRoleForm(instance=membership, prefix=f"role-{membership.pk}"),
+                }
+            )
+        return rows
+
     def get(self, request, pk):
-        tenant = Client.objects.filter(pk=pk).prefetch_related("domains", "memberships__user").first()
+        tenant = self._get_tenant(pk)
         if not tenant:
             messages.error(request, "Clinica no encontrada.")
             return redirect("tenants:list")
-        return render(request, "tenants/tenant_detail.html", {"tenant": tenant, "form": AddMemberForm()})
+        return render(
+            request,
+            "tenants/tenant_detail.html",
+            {"tenant": tenant, "form": AddMemberForm(), "membership_rows": self._membership_rows(tenant)},
+        )
 
     def post(self, request, pk):
-        tenant = Client.objects.filter(pk=pk).prefetch_related("domains", "memberships__user").first()
+        tenant = self._get_tenant(pk)
         if not tenant:
             messages.error(request, "Clinica no encontrada.")
             return redirect("tenants:list")
@@ -189,12 +207,16 @@ class TenantDetailView(LoginRequiredMixin, SuperAdminRequiredMixin, View):
                 user = User.objects.get(username=form.cleaned_data["username"])
             except User.DoesNotExist:
                 messages.error(request, "Usuario no encontrado.")
-                return render(request, "tenants/tenant_detail.html", {"tenant": tenant, "form": form})
+                return render(
+                    request,
+                    "tenants/tenant_detail.html",
+                    {"tenant": tenant, "form": form, "membership_rows": self._membership_rows(tenant)},
+                )
 
-            _, created = TenantMembership.objects.get_or_create(
+            membership, created = TenantMembership.objects.get_or_create(
                 tenant=tenant,
                 user=user,
-                defaults={"is_admin": form.cleaned_data["is_admin"], "is_active": True},
+                defaults={"role": form.cleaned_data["role"], "is_active": True},
             )
             if created:
                 messages.success(request, f"Usuario '{user.username}' agregado.")
@@ -202,7 +224,11 @@ class TenantDetailView(LoginRequiredMixin, SuperAdminRequiredMixin, View):
                 messages.info(request, f"'{user.username}' ya es miembro de esta clinica.")
             return redirect("tenants:detail", pk=tenant.pk)
 
-        return render(request, "tenants/tenant_detail.html", {"tenant": tenant, "form": form})
+        return render(
+            request,
+            "tenants/tenant_detail.html",
+            {"tenant": tenant, "form": form, "membership_rows": self._membership_rows(tenant)},
+        )
 
 
 class TenantToggleActiveView(LoginRequiredMixin, SuperAdminRequiredMixin, View):
@@ -218,6 +244,22 @@ class TenantToggleActiveView(LoginRequiredMixin, SuperAdminRequiredMixin, View):
         return redirect("tenants:detail", pk=tenant.pk)
 
 
+class MembershipRoleUpdateView(LoginRequiredMixin, SuperAdminRequiredMixin, View):
+    def post(self, request, pk):
+        membership = TenantMembership.objects.select_related("tenant", "user").filter(pk=pk).first()
+        if not membership:
+            messages.error(request, "Membresia no encontrada.")
+            return redirect("tenants:list")
+
+        form = MembershipRoleForm(request.POST, instance=membership, prefix=f"role-{membership.pk}")
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Rol de '{membership.user.username}' actualizado.")
+        else:
+            messages.error(request, "No se pudo actualizar el rol del miembro.")
+        return redirect("tenants:detail", pk=membership.tenant.pk)
+
+
 class MembershipToggleView(LoginRequiredMixin, SuperAdminRequiredMixin, View):
     def post(self, request, pk):
         membership = TenantMembership.objects.select_related("tenant", "user").filter(pk=pk).first()
@@ -225,7 +267,7 @@ class MembershipToggleView(LoginRequiredMixin, SuperAdminRequiredMixin, View):
             messages.error(request, "Membresia no encontrada.")
             return redirect("tenants:list")
         membership.is_active = not membership.is_active
-        membership.save(update_fields=["is_active"])
+        membership.save(update_fields=["is_active", "is_admin"])
         estado = "activado" if membership.is_active else "desactivado"
         messages.success(request, f"Usuario '{membership.user.username}' {estado}.")
         return redirect("tenants:detail", pk=membership.tenant.pk)

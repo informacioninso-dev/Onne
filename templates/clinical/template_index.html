@@ -1,0 +1,77 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Plantillas clinicas{% endblock %}
+
+{% block content %}
+  <div class="space-y-6">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">Plantillas clinicas</h1>
+        <p class="mt-1 text-sm text-gray-600">Diagnosticos y estructuras SOAP reutilizables por tenant.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="{% url 'clinical:index' %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Volver a atencion</a>
+        <a href="{% url 'clinical:create_template' %}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Nueva plantilla</a>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border bg-white p-6">
+      <form method="get" class="grid gap-3 md:grid-cols-[1fr_220px_220px_auto]">
+        <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre o diagnostico..." class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <select name="category" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Todas las categorias</option>
+          {% for category_option in categories %}
+            <option value="{{ category_option }}" {% if category == category_option %}selected{% endif %}>{{ category_option }}</option>
+          {% endfor %}
+        </select>
+        <select name="status" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="active" {% if status == 'active' %}selected{% endif %}>Activas</option>
+          <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactivas</option>
+          <option value="all" {% if status == 'all' %}selected{% endif %}>Todas</option>
+        </select>
+        <button type="submit" class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50">Buscar</button>
+      </form>
+
+      <div class="mt-6 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50 text-left text-gray-600">
+            <tr>
+              <th class="px-4 py-2">Nombre</th>
+              <th class="px-4 py-2">Categoria</th>
+              <th class="px-4 py-2">Version</th>
+              <th class="px-4 py-2">Diagnostico</th>
+              <th class="px-4 py-2">Estado</th>
+              <th class="px-4 py-2">Resumen</th>
+              <th class="px-4 py-2 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for template in templates %}
+              <tr class="border-t">
+                <td class="px-4 py-2 font-medium">{{ template.name }}</td>
+                <td class="px-4 py-2">{{ template.category|default:'-' }}</td>
+                <td class="px-4 py-2">v{{ template.version }}</td>
+                <td class="px-4 py-2">{{ template.diagnosis|default:'-' }}</td>
+                <td class="px-4 py-2">
+                  {% if template.is_active %}
+                    <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activa</span>
+                  {% else %}
+                    <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Inactiva</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-2 text-gray-600">S: {{ template.subjective|default:'-'|truncatechars:24 }} | O: {{ template.objective|default:'-'|truncatechars:24 }}</td>
+                <td class="px-4 py-2 text-right">
+                  <a href="{% url 'clinical:edit_template' template.pk %}" class="rounded border px-2 py-1 text-xs text-gray-600 hover:bg-gray-100">Editar</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="px-4 py-6 text-center text-gray-500">No hay plantillas para el filtro seleccionado.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,75 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Lote {{ lot.lot_number }}{% endblock %}
+
+{% block content %}
+  <div class="space-y-6">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">{{ lot.item.name }} · {{ lot.lot_number }}</h1>
+        <p class="mt-1 text-sm text-gray-600">Stock actual: {{ lot.current_quantity }} · Costo unitario: {{ lot.unit_cost }}</p>
+      </div>
+      <a href="{% url 'traceability:create_movement' %}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Registrar movimiento</a>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border bg-white p-6">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Resumen</h2>
+        <dl class="space-y-3 text-sm">
+          <div><dt class="text-gray-500">SKU</dt><dd>{{ lot.item.sku }}</dd></div>
+          <div><dt class="text-gray-500">Unidad</dt><dd>{{ lot.item.unit_of_measure }}</dd></div>
+          <div><dt class="text-gray-500">Expiracion</dt><dd>{{ lot.expires_at|default:"-" }}</dd></div>
+          <div><dt class="text-gray-500">Proveedor</dt><dd>{{ lot.supplier|default:"-" }}</dd></div>
+          <div><dt class="text-gray-500">Registro sanitario</dt><dd>{{ lot.registry_number|default:"-" }}</dd></div>
+        </dl>
+      </div>
+
+      <div class="rounded-2xl border bg-white p-6">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Estado</h2>
+        <dl class="space-y-3 text-sm">
+          <div><dt class="text-gray-500">Stock actual</dt><dd>{{ lot.current_quantity }}</dd></div>
+          <div><dt class="text-gray-500">Bloqueado</dt><dd>{% if lot.is_blocked %}Si{% else %}No{% endif %}</dd></div>
+          <div><dt class="text-gray-500">Expirado</dt><dd>{% if lot.is_expired %}Si{% else %}No{% endif %}</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border bg-white p-6">
+      <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Movimientos</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50 text-left text-gray-600">
+            <tr>
+              <th class="px-4 py-2">Fecha</th>
+              <th class="px-4 py-2">Tipo</th>
+              <th class="px-4 py-2">Cantidad</th>
+              <th class="px-4 py-2">Motivo</th>
+              <th class="px-4 py-2">Atencion</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for movement in movements %}
+              <tr class="border-t">
+                <td class="px-4 py-2">{{ movement.occurred_at|date:"d/m/Y H:i" }}</td>
+                <td class="px-4 py-2">{{ movement.get_movement_type_display }}</td>
+                <td class="px-4 py-2">{{ movement.quantity }}</td>
+                <td class="px-4 py-2">{{ movement.reason }}</td>
+                <td class="px-4 py-2">
+                  {% if movement.clinical_encounter %}
+                    <a href="{% url 'clinical:detail' movement.clinical_encounter.pk %}" class="text-blue-700 hover:underline">{{ movement.clinical_encounter.patient.last_name }}</a>
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="px-4 py-4 text-center text-gray-500">No hay movimientos para este lote.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

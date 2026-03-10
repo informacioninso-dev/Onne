@@ -1,0 +1,130 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ patient.last_name }}, {{ patient.first_name }}{% endblock %}
+
+{% block content %}
+  <div class="space-y-6">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">{{ patient.last_name }}, {{ patient.first_name }}</h1>
+        <p class="mt-1 text-sm text-gray-600">Historia cl&iacute;nica: <span class="font-mono">{{ patient.mrn }}</span></p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="{% url 'appointments:create' %}?patient={{ patient.pk }}" class="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50">Nueva cita</a>
+        <a href="{% url 'clinical:create' %}?patient={{ patient.pk }}" class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Nueva atencion</a>
+        <a href="{% url 'patients:edit' patient.pk %}" class="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50">Editar</a>
+        <form method="post" action="{% url 'patients:toggle_active' patient.pk %}" class="inline">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'patients:detail' patient.pk %}">
+          {% if patient.is_active %}
+            <button type="submit" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 hover:bg-red-100">Desactivar</button>
+          {% else %}
+            <button type="submit" class="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700 hover:bg-green-100">Activar</button>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border bg-white p-6">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Identificaci&oacute;n</h2>
+        <dl class="space-y-3 text-sm">
+          <div>
+            <dt class="text-gray-500">Documento</dt>
+            <dd class="font-medium">{{ patient.get_document_type_display }} {{ patient.document_number }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Sexo</dt>
+            <dd>{{ patient.get_sex_display }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Fecha de nacimiento</dt>
+            <dd>{{ patient.birth_date|default:"-" }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Estado</dt>
+            <dd>
+              {% if patient.is_active %}
+                <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activo</span>
+              {% else %}
+                <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Inactivo</span>
+              {% endif %}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="rounded-2xl border bg-white p-6">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Contacto</h2>
+        <dl class="space-y-3 text-sm">
+          <div>
+            <dt class="text-gray-500">Tel&eacute;fono</dt>
+            <dd>{{ patient.phone|default:"-" }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Correo</dt>
+            <dd>{{ patient.email|default:"-" }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Direcci&oacute;n</dt>
+            <dd>{{ patient.address|default:"-" }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Creado</dt>
+            <dd>{{ patient.created_at }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border bg-white p-6">
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-500">Ultimas citas</h2>
+          <a href="{% url 'appointments:create' %}?patient={{ patient.pk }}" class="text-sm text-blue-700 hover:underline">Nueva cita</a>
+        </div>
+        <div class="space-y-3">
+          {% for appointment in recent_appointments %}
+            <div class="rounded-lg border p-3 text-sm">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="font-medium">{{ appointment.scheduled_at|date:"d/m/Y H:i" }}</p>
+                  <p class="text-gray-500">{{ appointment.get_status_display }} · {{ appointment.reason|default:"Sin motivo" }}</p>
+                </div>
+                <a href="{% url 'appointments:detail' appointment.pk %}" class="text-blue-700 hover:underline">Ver</a>
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-sm text-gray-500">No hay citas registradas para este paciente.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="rounded-2xl border bg-white p-6">
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-500">Ultimas atenciones</h2>
+          <a href="{% url 'clinical:create' %}?patient={{ patient.pk }}" class="text-sm text-blue-700 hover:underline">Nueva atencion</a>
+        </div>
+        <div class="space-y-3">
+          {% for encounter in recent_encounters %}
+            <div class="rounded-lg border p-3 text-sm">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="font-medium">{{ encounter.started_at|date:"d/m/Y H:i" }}</p>
+                  <p class="text-gray-500">{{ encounter.get_status_display }} · {{ encounter.chief_complaint }}</p>
+                </div>
+                <a href="{% url 'clinical:detail' encounter.pk %}" class="text-blue-700 hover:underline">Ver</a>
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-sm text-gray-500">No hay atenciones registradas para este paciente.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <a href="{% url 'patients:index' %}" class="text-sm text-gray-500 hover:underline">&larr; Volver a pacientes</a>
+    </div>
+  </div>
+{% endblock %}

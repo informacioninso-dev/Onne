@@ -1,0 +1,109 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Trazabilidad{% endblock %}
+
+{% block content %}
+  <div class="space-y-6">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">Trazabilidad</h1>
+        <p class="mt-1 text-sm text-gray-600">Insumos, lotes y movimientos del tenant.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="{% url 'traceability:create_item' %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Nuevo insumo</a>
+        <a href="{% url 'traceability:create_lot' %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Nuevo lote</a>
+        <a href="{% url 'traceability:create_movement' %}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Nuevo movimiento</a>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border bg-white p-6">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Insumos</h2>
+        <div class="space-y-3">
+          {% for item in items %}
+            <div class="rounded-lg border p-3 text-sm">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="font-medium">{{ item.name }}</p>
+                  <p class="text-gray-500">{{ item.sku }} · {{ item.unit_of_measure }}</p>
+                </div>
+                {% if item.is_active %}
+                  <span class="text-xs text-green-700">Activo</span>
+                {% else %}
+                  <span class="text-xs text-red-700">Inactivo</span>
+                {% endif %}
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-sm text-gray-500">No hay insumos registrados.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="rounded-2xl border bg-white p-6">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Lotes</h2>
+        <div class="space-y-3">
+          {% for lot in lots %}
+            <div class="rounded-lg border p-3 text-sm">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="font-medium"><a href="{% url 'traceability:lot_detail' lot.pk %}" class="text-blue-700 hover:underline">{{ lot.item.name }} · {{ lot.lot_number }}</a></p>
+                  <p class="text-gray-500">Stock: {{ lot.current_quantity }} · Expira: {{ lot.expires_at|default:"-" }}</p>
+                </div>
+                {% if lot.is_blocked %}
+                  <span class="text-xs text-red-700">Bloqueado</span>
+                {% elif lot.is_expired %}
+                  <span class="text-xs text-red-700">Expirado</span>
+                {% else %}
+                  <span class="text-xs text-green-700">Disponible</span>
+                {% endif %}
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-sm text-gray-500">No hay lotes registrados.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border bg-white p-6">
+      <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Movimientos recientes</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50 text-left text-gray-600">
+            <tr>
+              <th class="px-4 py-2">Fecha</th>
+              <th class="px-4 py-2">Lote</th>
+              <th class="px-4 py-2">Tipo</th>
+              <th class="px-4 py-2">Cantidad</th>
+              <th class="px-4 py-2">Motivo</th>
+              <th class="px-4 py-2">Atencion</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for movement in recent_movements %}
+              <tr class="border-t">
+                <td class="px-4 py-2">{{ movement.occurred_at|date:"d/m/Y H:i" }}</td>
+                <td class="px-4 py-2"><a href="{% url 'traceability:lot_detail' movement.lot.pk %}" class="text-blue-700 hover:underline">{{ movement.lot.lot_number }}</a></td>
+                <td class="px-4 py-2">{{ movement.get_movement_type_display }}</td>
+                <td class="px-4 py-2">{{ movement.quantity }}</td>
+                <td class="px-4 py-2">{{ movement.reason }}</td>
+                <td class="px-4 py-2">
+                  {% if movement.clinical_encounter %}
+                    <a href="{% url 'clinical:detail' movement.clinical_encounter.pk %}" class="text-blue-700 hover:underline">{{ movement.clinical_encounter.patient.last_name }}</a>
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="px-4 py-4 text-center text-gray-500">No hay movimientos registrados.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

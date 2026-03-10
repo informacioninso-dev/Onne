@@ -9,7 +9,7 @@
     <nav class="flex items-center gap-4">
       {% if request.user.is_authenticated %}
         {% if request.tenant.schema_name == 'public' %}
-          <a href="{% url 'dashboard' %}" class="text-sm text-gray-700 hover:underline">Mis cl?nicas</a>
+          <a href="{% url 'dashboard' %}" class="text-sm text-gray-700 hover:underline">Mis cl&iacute;nicas</a>
           {% if request.user.is_superuser %}
             <a href="{% url 'tenants:list' %}" class="text-sm text-gray-700 hover:underline">Tenants</a>
           {% endif %}
@@ -17,13 +17,15 @@
           <a href="{% url 'dashboard' %}" class="text-sm text-gray-700 hover:underline">Inicio</a>
           <a href="{% url 'patients:index' %}" class="text-sm text-gray-700 hover:underline">Pacientes</a>
           <a href="{% url 'appointments:index' %}" class="text-sm text-gray-700 hover:underline">Citas</a>
+          <a href="{% url 'clinical:index' %}" class="text-sm text-gray-700 hover:underline">Atencion</a>
+          <a href="{% url 'traceability:index' %}" class="text-sm text-gray-700 hover:underline">Trazabilidad</a>
         {% endif %}
         <form method="post" action="{% url 'logout' %}" class="inline">
           {% csrf_token %}
           <button type="submit" class="text-sm text-red-600 hover:underline">Salir</button>
         </form>
       {% else %}
-        <a href="{% url 'login' %}" class="text-sm text-blue-600 hover:underline">Iniciar sesi?n</a>
+        <a href="{% url 'login' %}" class="text-sm text-blue-600 hover:underline">Iniciar sesi&oacute;n</a>
       {% endif %}
     </nav>
   </div>

@@ -1,0 +1,100 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Cita de {{ appointment.patient.last_name }}{% endblock %}
+
+{% block content %}
+  <div class="space-y-6">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">Cita de {{ appointment.patient.last_name }}, {{ appointment.patient.first_name }}</h1>
+        <p class="mt-1 text-sm text-gray-600">{{ appointment.scheduled_at|date:"d/m/Y H:i" }} · {{ appointment.duration_minutes }} minutos</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="{% url 'clinical:create' %}?appointment={{ appointment.pk }}" class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Abrir atencion</a>
+        <a href="{% url 'appointments:edit' appointment.pk %}" class="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50">Editar</a>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border bg-white p-6">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Resumen</h2>
+        <dl class="space-y-3 text-sm">
+          <div>
+            <dt class="text-gray-500">Paciente</dt>
+            <dd class="font-medium">
+              <a href="{% url 'patients:detail' appointment.patient.pk %}" class="text-blue-700 hover:underline">
+                {{ appointment.patient.last_name }}, {{ appointment.patient.first_name }}
+              </a>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Historia cl&iacute;nica</dt>
+            <dd class="font-mono">{{ appointment.patient.mrn }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Estado</dt>
+            <dd>{{ appointment.get_status_display }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Motivo</dt>
+            <dd>{{ appointment.reason|default:"-" }}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="rounded-2xl border bg-white p-6">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Notas</h2>
+        <p class="text-sm text-gray-700 whitespace-pre-line">{{ appointment.notes|default:"Sin notas registradas." }}</p>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border bg-white p-6">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-500">Atenciones relacionadas</h2>
+        <a href="{% url 'clinical:create' %}?appointment={{ appointment.pk }}" class="text-sm text-blue-700 hover:underline">Nueva atencion desde esta cita</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50 text-left text-gray-600">
+            <tr>
+              <th class="px-4 py-2">Fecha</th>
+              <th class="px-4 py-2">Estado</th>
+              <th class="px-4 py-2">Motivo</th>
+              <th class="px-4 py-2 text-right">Accion</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for encounter in related_encounters %}
+              <tr class="border-t">
+                <td class="px-4 py-2">{{ encounter.started_at|date:"d/m/Y H:i" }}</td>
+                <td class="px-4 py-2">{{ encounter.get_status_display }}</td>
+                <td class="px-4 py-2">{{ encounter.chief_complaint }}</td>
+                <td class="px-4 py-2 text-right"><a href="{% url 'clinical:detail' encounter.pk %}" class="text-blue-700 hover:underline">Ver</a></td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="px-4 py-4 text-center text-gray-500">Todavia no hay atenciones relacionadas con esta cita.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border bg-white p-6">
+      <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Cambiar estado</h2>
+      <form method="post" action="{% url 'appointments:update_status' appointment.pk %}" class="flex flex-wrap items-center gap-2">
+        {% csrf_token %}
+        {% for value, label in appointment._meta.get_field('status').choices %}
+          <button type="submit" name="status" value="{{ value }}" class="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50 {% if appointment.status == value %}border-blue-600 text-blue-700{% endif %}">
+            {{ label }}
+          </button>
+        {% endfor %}
+      </form>
+    </div>
+
+    <div>
+      <a href="{% url 'appointments:index' %}" class="text-sm text-gray-500 hover:underline">&larr; Volver a citas</a>
+    </div>
+  </div>
+{% endblock %}

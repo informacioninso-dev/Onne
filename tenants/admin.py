@@ -1,4 +1,4 @@
-from django.contrib import admin
+﻿from django.contrib import admin
 
 from .models import Client, Domain, TenantMembership
 
@@ -23,6 +23,6 @@ class DomainAdmin(admin.ModelAdmin):
 
 @admin.register(TenantMembership)
 class TenantMembershipAdmin(admin.ModelAdmin):
-    list_display = ("tenant", "user", "is_admin", "is_active")
-    list_filter = ("is_admin", "is_active")
+    list_display = ("tenant", "user", "role", "is_admin", "is_active")
+    list_filter = ("role", "is_admin", "is_active")
     search_fields = ("tenant__name", "tenant__schema_name", "user__username", "user__email")

@@ -1,0 +1,92 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div class="mx-auto max-w-4xl space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold">{{ page_title }}</h1>
+      <p class="mt-1 text-sm text-gray-600">Completa la ficha base del paciente.</p>
+    </div>
+
+    <form method="post" class="rounded-2xl border bg-white p-6">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm font-medium">Historia cl&iacute;nica</label>
+          {{ form.mrn }}
+          {{ form.mrn.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Tipo de documento</label>
+          {{ form.document_type }}
+          {{ form.document_type.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">N&uacute;mero de documento</label>
+          {{ form.document_number }}
+          {{ form.document_number.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Sexo</label>
+          {{ form.sex }}
+          {{ form.sex.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Nombres</label>
+          {{ form.first_name }}
+          {{ form.first_name.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Apellidos</label>
+          {{ form.last_name }}
+          {{ form.last_name.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Fecha de nacimiento</label>
+          {{ form.birth_date }}
+          {{ form.birth_date.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Tel&eacute;fono</label>
+          {{ form.phone }}
+          {{ form.phone.errors }}
+        </div>
+        <div class="md:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Correo</label>
+          {{ form.email }}
+          {{ form.email.errors }}
+        </div>
+        <div class="md:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Direcci&oacute;n</label>
+          {{ form.address }}
+          {{ form.address.errors }}
+        </div>
+      </div>
+
+      <div class="mt-4 flex items-center gap-2">
+        {{ form.is_active }}
+        <label class="text-sm text-gray-700">Paciente activo</label>
+        {{ form.is_active.errors }}
+      </div>
+
+      <div class="mt-6 flex gap-2">
+        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+          Guardar
+        </button>
+        {% if patient %}
+          <a href="{% url 'patients:detail' patient.pk %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Cancelar</a>
+        {% else %}
+          <a href="{% url 'patients:index' %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Cancelar</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+{% endblock %}

@@ -14,6 +14,8 @@ urlpatterns = [
     path('', views.dashboard, name='dashboard'),
     path('patients/', include(('patients.urls', 'patients'), namespace='patients')),
     path('appointments/', include(('appointments.urls', 'appointments'), namespace='appointments')),
+    path('clinical/', include(('clinical.urls', 'clinical'), namespace='clinical')),
+    path('traceability/', include(('traceability.urls', 'traceability'), namespace='traceability')),
 
     path('accounts/login/', tenant_views.TenantLoginView.as_view(), name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),

@@ -1,22 +1,22 @@
 {% extends 'base.html' %}
 
-{% block title %}Mis clinicas{% endblock %}
+{% block title %}Mis cl&iacute;nicas{% endblock %}
 
 {% block content %}
   <div class="mb-4">
-    <h1 class="text-2xl font-bold">Mis clinicas</h1>
-    <p class="text-sm text-gray-600">Selecciona la clinica a la que deseas ingresar.</p>
+    <h1 class="text-2xl font-bold">Mis cl&iacute;nicas</h1>
+    <p class="text-sm text-gray-600">Selecciona la cl&iacute;nica a la que deseas ingresar.</p>
   </div>
 
   <div class="overflow-x-auto rounded-xl border bg-white">
     <table class="min-w-full text-sm">
       <thead class="bg-gray-50 text-left text-gray-600">
         <tr>
-          <th class="px-4 py-2">Clinica</th>
+          <th class="px-4 py-2">Cl&iacute;nica</th>
           <th class="px-4 py-2">Schema</th>
           <th class="px-4 py-2">Rol</th>
           <th class="px-4 py-2">Dominio</th>
-          <th class="px-4 py-2 text-right">Accion</th>
+          <th class="px-4 py-2 text-right">Acci&oacute;n</th>
         </tr>
       </thead>
       <tbody>
@@ -46,7 +46,7 @@
         {% empty %}
           <tr>
             <td colspan="5" class="px-4 py-6 text-center text-gray-500">
-              No tienes clinicas activas asignadas.
+              No tienes cl&iacute;nicas activas asignadas.
             </td>
           </tr>
         {% endfor %}
@@ -56,8 +56,7 @@
 
   {% if request.user.is_superuser %}
     <div class="mt-4">
-      <a href="{% url 'tenants:list' %}" class="text-sm text-blue-600 hover:underline">Administrar Clinicas</a>
+      <a href="{% url 'tenants:list' %}" class="text-sm text-blue-600 hover:underline">Administrar cl&iacute;nicas</a>
     </div>
   {% endif %}
 {% endblock %}
-

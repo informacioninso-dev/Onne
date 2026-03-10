@@ -1,57 +1,81 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Pacientes{% endblock %}
 
 {% block content %}
-  <div class="rounded-2xl border bg-white p-6">
-    <div class="mb-4 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Pacientes</h1>
-      <span class="text-sm text-gray-500">Base inicial</span>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Pacientes</h1>
+        <p class="mt-1 text-sm text-gray-600">Base operativa para registro y consulta del padr&oacute;n de pacientes.</p>
+      </div>
+      <a href="{% url 'patients:create' %}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+        Nuevo paciente
+      </a>
     </div>
 
-    <form method="get" class="mb-4">
-      <input
-        type="text"
-        name="q"
-        value="{{ q }}"
-        placeholder="Buscar por historia clinica o nombre..."
-        class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </form>
+    <div class="rounded-2xl border bg-white p-6">
+      <form method="get" class="grid gap-3 md:grid-cols-[1fr_180px_auto]">
+        <input
+          type="text"
+          name="q"
+          value="{{ q }}"
+          placeholder="Buscar por historia cl&iacute;nica, documento o nombre..."
+          class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <select name="status" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="active" {% if status == 'active' %}selected{% endif %}>Activos</option>
+          <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactivos</option>
+          <option value="all" {% if status == 'all' %}selected{% endif %}>Todos</option>
+        </select>
+        <button type="submit" class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50">Buscar</button>
+      </form>
 
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm">
-        <thead class="bg-gray-50 text-left text-gray-600">
-          <tr>
-            <th class="px-4 py-2">Historia</th>
-            <th class="px-4 py-2">Paciente</th>
-            <th class="px-4 py-2">Documento</th>
-            <th class="px-4 py-2">Telefono</th>
-            <th class="px-4 py-2">Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for patient in patients %}
-            <tr class="border-t">
-              <td class="px-4 py-2 font-mono text-xs">{{ patient.mrn }}</td>
-              <td class="px-4 py-2">{{ patient.last_name }}, {{ patient.first_name }}</td>
-              <td class="px-4 py-2">{{ patient.document_type }} {{ patient.document_number }}</td>
-              <td class="px-4 py-2">{{ patient.phone|default:"-" }}</td>
-              <td class="px-4 py-2">
-                {% if patient.is_active %}
-                  <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activo</span>
-                {% else %}
-                  <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Inactivo</span>
-                {% endif %}
-              </td>
-            </tr>
-          {% empty %}
+      <div class="mt-6 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50 text-left text-gray-600">
             <tr>
-              <td colspan="5" class="px-4 py-6 text-center text-gray-500">Sin pacientes registrados.</td>
+              <th class="px-4 py-2">Historia</th>
+              <th class="px-4 py-2">Paciente</th>
+              <th class="px-4 py-2">Documento</th>
+              <th class="px-4 py-2">Tel&eacute;fono</th>
+              <th class="px-4 py-2">Estado</th>
+              <th class="px-4 py-2 text-right">Acciones</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for patient in patients %}
+              <tr class="border-t">
+                <td class="px-4 py-2 font-mono text-xs">{{ patient.mrn }}</td>
+                <td class="px-4 py-2">
+                  <a href="{% url 'patients:detail' patient.pk %}" class="font-medium text-blue-700 hover:underline">
+                    {{ patient.last_name }}, {{ patient.first_name }}
+                  </a>
+                </td>
+                <td class="px-4 py-2">{{ patient.get_document_type_display }} {{ patient.document_number }}</td>
+                <td class="px-4 py-2">{{ patient.phone|default:"-" }}</td>
+                <td class="px-4 py-2">
+                  {% if patient.is_active %}
+                    <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activo</span>
+                  {% else %}
+                    <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Inactivo</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-2 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <a href="{% url 'patients:detail' patient.pk %}" class="rounded border px-2 py-1 text-xs text-gray-600 hover:bg-gray-100">Ver</a>
+                    <a href="{% url 'patients:edit' patient.pk %}" class="rounded border px-2 py-1 text-xs text-gray-600 hover:bg-gray-100">Editar</a>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="px-4 py-6 text-center text-gray-500">No hay pacientes para el filtro seleccionado.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 {% endblock %}

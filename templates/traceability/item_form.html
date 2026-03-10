@@ -1,0 +1,37 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div class="mx-auto max-w-3xl space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold">{{ page_title }}</h1>
+      <p class="mt-1 text-sm text-gray-600">Catalogo base de insumos trazables.</p>
+    </div>
+
+    <form method="post" class="rounded-2xl border bg-white p-6 space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="mb-1 block text-sm font-medium">Nombre</label>
+        {{ form.name }}
+        {{ form.name.errors }}
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium">SKU</label>
+        {{ form.sku }}
+        {{ form.sku.errors }}
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium">Unidad</label>
+        {{ form.unit_of_measure }}
+        {{ form.unit_of_measure.errors }}
+      </div>
+      <div class="flex items-center gap-2">{{ form.track_expiration }} <label class="text-sm">Controla expiracion</label></div>
+      <div class="flex items-center gap-2">{{ form.is_active }} <label class="text-sm">Activo</label></div>
+      <div class="flex gap-2">
+        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Guardar</button>
+        <a href="{% url 'traceability:index' %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Cancelar</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

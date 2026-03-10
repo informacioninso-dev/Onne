@@ -1,41 +1,85 @@
-﻿# Onne 360 (Base Limpia)
+﻿# Onne Health ERP
 
-Repositorio reducido para iniciar el sistema gestor de clÃ­nica sobre Django + multitenancy por schema.
+**Tipo de documento:** estado actual + vision futura
 
-## Estado actual
+## Estado del documento
 
-- Apps activas:
-  - `tenants` (schema/domain/memberships)
-  - `core` (base mÃ­nima y dashboard)
-  - `patients` (registro base de pacientes)
-  - `appointments` (agenda de citas)
-- Apps ERP heredadas eliminadas para evitar arrastrar deuda tÃ©cnica.
+Este README mezcla dos perspectivas:
 
-## Arranque local
+- El estado actual del repositorio.
+- La vision objetivo del producto a mediano plazo.
 
-```bash
-poetry install
-poetry run python manage.py migrate_schemas --shared
-poetry run python manage.py setup_public_tenant --domains localhost,127.0.0.1
-poetry run python manage.py createsuperuser
-poetry run python manage.py runserver
-```
+Cuando exista diferencia entre ambas, prevalece el estado actual del codigo para decisiones de implementacion.
 
-## Clinica inicial
+## Estado actual del repositorio
 
-```bash
-poetry run python manage.py bootstrap_clinic <schema> "<nombre>" <subdominio.dominio> --admin-user <usuario> --admin-email <email> --admin-password "<password>"
-```
+Actualmente el proyecto implementa una base Django con multitenancy por schema usando `django-tenants`.
 
-Ejemplo:
+### Componentes presentes hoy
 
-```bash
-poetry run python manage.py bootstrap_clinic clinica_a "Clinica A" clinica-a.localhost --admin-user admin --admin-email admin@onne.local --admin-password "Onne2026!"
-```
+- `tenants`: tenants, dominios, memberships y acceso entre schema publico y tenants.
+- `core`: base publica y dashboard inicial.
+- `patients`: registro base de pacientes.
+- `appointments`: agenda base de citas.
+- PostgreSQL como base de datos.
+- Poetry para dependencias.
 
-## Acceso y subdominios
+### Forma actual de ejecucion local
 
-- El superadmin accede al portal publico con usuario y contraseÃƒÂ±a para gestionar tenants.
-- Los usuarios normales solo pueden entrar a tenants donde tengan membresÃƒÂ­a activa y deben autenticarse con contraseÃƒÂ±a.
-- Para compartir sesiÃƒÂ³n entre subdominios (`empresa1.dominio.com`, `empresa2.dominio.com`), define `SESSION_COOKIE_DOMAIN` y `CSRF_COOKIE_DOMAIN` como `.dominio.com`.
+- `poetry install`
+- `poetry run python manage.py migrate_schemas --shared`
+- `poetry run python manage.py setup_public_tenant --domains localhost,127.0.0.1`
+- `poetry run python manage.py createsuperuser`
+- `poetry run python manage.py runserver`
+
+## Vision futura del producto
+
+Onne se proyecta como un ERP de salud de alta trazabilidad para gestionar operacion clinica, inventario tecnico, facturacion y analitica, con enfoque en cumplimiento normativo para Ecuador y buenas practicas alineadas con ISO 13485.
+
+### Objetivos de producto
+
+- Gestionar pacientes y atencion medica.
+- Controlar inventario de farmacos y dispositivos medicos con trazabilidad por lote, serie y expiracion.
+- Calcular costos reales de atencion.
+- Integrar facturacion electronica.
+- Proveer analitica operativa y financiera.
+- Garantizar auditoria, privacidad y consistencia transaccional.
+
+### Principios de arquitectura objetivo
+
+- Backend basado en Django y PostgreSQL.
+- Arquitectura por capas.
+- Logica de negocio concentrada en servicios.
+- Consultas complejas concentradas en selectores.
+- Trazabilidad y auditoria como capacidades nativas.
+
+### Modulos objetivo
+
+- `patients`
+- `clinical`
+- `trace`
+- `finance`
+- `insight`
+- `auditing`
+- `security`
+- `users`
+
+## Reglas criticas
+
+- No se hacen deletes fisicos en datos clinicos ni trazables.
+- Todo proceso que afecte inventario o finanzas debe ejecutarse con `transaction.atomic()`.
+- Toda mutacion relevante debe generar trazabilidad auditable.
+- El consumo de insumos debe respetar FEFO.
+- La historia clinica y otros datos sensibles deben protegerse con controles de acceso y cifrado cuando aplique.
+
+## Documentos relacionados
+
+- `AGENTS.md`
+- `docs/ARCHITECTURE.md`
+- `docs/COMPLIANCE.md`
+- `docs/ROADMAP.md`
+- `CONTRIBUTING.md`
+- `PROMPT_CODEX_BACKEND.md`
+- `PROMPT_CODEX_REVIEW.md`
+- `docs/adr/ADR_TEMPLATE.md`
 

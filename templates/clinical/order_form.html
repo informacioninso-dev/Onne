@@ -1,0 +1,70 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div class="mx-auto max-w-4xl space-y-6">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">{{ page_title }}</h1>
+        <p class="mt-1 text-sm text-gray-600">Paciente: {{ encounter.patient.last_name }}, {{ encounter.patient.first_name }}</p>
+      </div>
+      <a href="{% url 'clinical:detail' encounter.pk %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Volver a la atencion</a>
+    </div>
+
+    <form method="post" class="rounded-2xl border bg-white p-6">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm font-medium">Tipo</label>
+          {{ form.order_type }}
+          {{ form.order_type.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Prioridad</label>
+          {{ form.priority }}
+          {{ form.priority.errors }}
+        </div>
+        <div class="md:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Titulo</label>
+          {{ form.title }}
+          {{ form.title.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Estado</label>
+          {{ form.status }}
+          {{ form.status.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Fecha de solicitud</label>
+          {{ form.requested_at }}
+          {{ form.requested_at.errors }}
+        </div>
+        <div class="md:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Indicaciones</label>
+          {{ form.instructions }}
+          {{ form.instructions.errors }}
+        </div>
+        <div class="md:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Resultado</label>
+          {{ form.result_notes }}
+          {{ form.result_notes.errors }}
+        </div>
+      </div>
+
+      <div class="mt-6 flex gap-2">
+        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+          Guardar
+        </button>
+        <a href="{% url 'clinical:detail' encounter.pk %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Cancelar</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

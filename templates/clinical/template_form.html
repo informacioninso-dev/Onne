@@ -1,0 +1,69 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div class="mx-auto max-w-5xl space-y-6">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">{{ page_title }}</h1>
+        <p class="mt-1 text-sm text-gray-600">Guarda diagnosticos y estructuras SOAP reutilizables.</p>
+      </div>
+      <a href="{% url 'clinical:template_index' %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Ver plantillas</a>
+    </div>
+
+    <form method="post" class="rounded-2xl border bg-white p-6">
+      {% csrf_token %}
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm font-medium">Nombre</label>
+          {{ form.name }}
+          {{ form.name.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Categoria</label>
+          {{ form.category }}
+          {{ form.category.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Version</label>
+          {{ form.version }}
+          {{ form.version.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Diagnostico sugerido</label>
+          {{ form.diagnosis }}
+          {{ form.diagnosis.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Subjetivo sugerido</label>
+          {{ form.subjective }}
+          {{ form.subjective.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Objetivo sugerido</label>
+          {{ form.objective }}
+          {{ form.objective.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Evaluacion sugerida</label>
+          {{ form.assessment }}
+          {{ form.assessment.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Plan sugerido</label>
+          {{ form.plan }}
+          {{ form.plan.errors }}
+        </div>
+        <div class="md:col-span-2 flex items-center gap-2">
+          {{ form.is_active }}
+          <label class="text-sm text-gray-700">Plantilla activa</label>
+        </div>
+      </div>
+      <div class="mt-6 flex gap-2">
+        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Guardar</button>
+        <a href="{% url 'clinical:template_index' %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Cancelar</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

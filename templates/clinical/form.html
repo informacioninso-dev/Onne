@@ -1,0 +1,137 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div class="mx-auto max-w-5xl space-y-6">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">{{ page_title }}</h1>
+        <p class="mt-1 text-sm text-gray-600">Registro estructurado de evolucion, diagnostico y plan clinico.</p>
+      </div>
+      <a href="{% url 'clinical:create_template' %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Nueva plantilla</a>
+    </div>
+
+    <form method="post" class="rounded-2xl border bg-white p-6">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm font-medium">Paciente</label>
+          {{ form.patient }}
+          {{ form.patient.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Cita relacionada</label>
+          {{ form.appointment }}
+          {{ form.appointment.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Plantilla clinica</label>
+          {{ form.template }}
+          {{ form.template.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Fecha y hora de atencion</label>
+          {{ form.started_at }}
+          {{ form.started_at.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Estado</label>
+          {{ form.status }}
+          {{ form.status.errors }}
+        </div>
+        <div class="md:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Motivo clinico</label>
+          {{ form.chief_complaint }}
+          {{ form.chief_complaint.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Subjetivo</label>
+          {{ form.subjective }}
+          {{ form.subjective.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Objetivo</label>
+          {{ form.objective }}
+          {{ form.objective.errors }}
+        </div>
+        <div class="md:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Diagnostico</label>
+          {{ form.diagnosis }}
+          {{ form.diagnosis.errors }}
+          <datalist id="diagnosis-suggestions"></datalist>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Evaluacion</label>
+          {{ form.assessment }}
+          {{ form.assessment.errors }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Plan</label>
+          {{ form.plan }}
+          {{ form.plan.errors }}
+        </div>
+      </div>
+
+      <div class="mt-6 flex gap-2">
+        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+          Guardar
+        </button>
+        {% if encounter %}
+          <a href="{% url 'clinical:detail' encounter.pk %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Cancelar</a>
+        {% else %}
+          <a href="{% url 'clinical:index' %}" class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">Cancelar</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    (function () {
+      const diagnosisInput = document.getElementById('id_diagnosis');
+      const datalist = document.getElementById('diagnosis-suggestions');
+      if (!diagnosisInput || !datalist) {
+        return;
+      }
+
+      let timeoutId = null;
+
+      const loadSuggestions = async () => {
+        const q = diagnosisInput.value.trim();
+        if (q.length < 2) {
+          datalist.innerHTML = '';
+          return;
+        }
+
+        const url = new URL('{% url "clinical:diagnosis_suggestions" %}', window.location.origin);
+        url.searchParams.set('q', q);
+        const response = await fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = await response.json();
+        datalist.innerHTML = '';
+        (payload.results || []).forEach((value) => {
+          const option = document.createElement('option');
+          option.value = value;
+          datalist.appendChild(option);
+        });
+      };
+
+      diagnosisInput.addEventListener('input', () => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(loadSuggestions, 180);
+      });
+    })();
+  </script>
+{% endblock %}

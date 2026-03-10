@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, CommandError
+﻿from django.core.management.base import BaseCommand, CommandError
 from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django_tenants.utils import schema_context
@@ -72,7 +72,7 @@ class Command(BaseCommand):
             TenantMembership.objects.get_or_create(
                 tenant=client,
                 user=user,
-                defaults={"is_admin": True, "is_active": True},
+                defaults={"role": TenantMembership.ROLE_OWNER, "is_admin": True, "is_active": True},
             )
 
         self.stdout.write(self.style.SUCCESS(f"Clinica {client.schema_name} creada."))
